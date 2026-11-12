@@ -115,7 +115,7 @@
     '#hwc-panel .btn:hover{filter:brightness(1.06)}' +
     '#hwc-panel .btn.sub{background:#efebfa;color:#5b47a3;box-shadow:none}' +
     '#hwc-panel .empty{padding:28px 18px;text-align:center;color:#7c63c9;font-weight:600}' +
-    'tr.hwc-miss td{background:#efe9fc !important}' +
+    'tr.hwc-miss td{background:#fff3b0 !important}' +
     'tr.hwc-hide{display:none !important}';
 
   var panel = document.createElement('div');
