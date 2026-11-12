@@ -80,41 +80,66 @@
   function md(d) { return (d.getMonth() + 1) + '/' + d.getDate(); }
 
   var css =
-    '#hwc-panel{position:fixed;top:12px;right:12px;width:360px;max-height:calc(100vh - 24px);z-index:2147483647;background:#fff;color:#222;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);font:14px/1.45 "Malgun Gothic",sans-serif;display:flex;flex-direction:column;overflow:hidden}' +
+    /* 라벤더 소프트 테마 */
+    '#hwc-panel{position:fixed;top:12px;right:0;width:360px;max-width:calc(100vw - 48px);z-index:2147483647;color:#2d2640;font:14px/1.5 Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;letter-spacing:-0.01em;transition:transform .32s cubic-bezier(.2,.8,.2,1)}' +
+    '#hwc-panel.folded{transform:translateX(100%)}' +
+    '#hwc-panel .box{background:#fff;border-radius:18px 0 0 18px;box-shadow:0 24px 48px rgba(90,60,160,.22),0 2px 6px rgba(90,60,160,.08);max-height:calc(100vh - 24px);display:flex;flex-direction:column;overflow:hidden}' +
     '#hwc-panel *{box-sizing:border-box;font-family:inherit}' +
-    '#hwc-panel .hd{background:#d63384;color:#fff;padding:12px 14px;display:flex;align-items:center;justify-content:space-between}' +
-    '#hwc-panel .hd b{font-size:16px}' +
-    '#hwc-panel .x{background:none;border:0;color:#fff;font-size:22px;cursor:pointer;line-height:1}' +
-    '#hwc-panel .ctl{padding:10px 14px;border-bottom:1px solid #eee;display:flex;flex-wrap:wrap;gap:6px;align-items:center}' +
-    '#hwc-panel .ctl input[type=date]{padding:4px 6px;border:1px solid #ccc;border-radius:6px}' +
-    '#hwc-panel .chip{padding:4px 9px;border:1px solid #d63384;color:#d63384;background:#fff;border-radius:999px;cursor:pointer;font-size:12px}' +
-    '#hwc-panel .chip.on{background:#d63384;color:#fff}' +
-    '#hwc-panel .sum{padding:8px 14px;background:#fff5f9;font-size:13px}' +
-    '#hwc-panel .sum strong{color:#d63384;font-size:16px}' +
-    '#hwc-panel ul{list-style:none;margin:0;padding:0;overflow:auto;flex:1}' +
-    '#hwc-panel li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:8px 14px;border-bottom:1px solid #f1f1f1;cursor:pointer}' +
-    '#hwc-panel li:hover{background:#fafafa}' +
-    '#hwc-panel .nm{font-weight:bold}' +
-    '#hwc-panel .meta{grid-column:1/2;color:#777;font-size:12px}' +
-    '#hwc-panel .dt{grid-row:1/3;grid-column:2;text-align:right;align-self:center;font-size:12px;color:#777}' +
-    '#hwc-panel .dt b{display:block;color:#c0392b;font-size:13px}' +
-    '#hwc-panel .ft{padding:10px 14px;display:flex;gap:6px;border-top:1px solid #eee}' +
-    '#hwc-panel .btn{flex:1;padding:8px;border:0;border-radius:8px;background:#333;color:#fff;cursor:pointer}' +
-    '#hwc-panel .btn.sub{background:#eee;color:#333}' +
-    '#hwc-panel .empty{padding:24px 14px;text-align:center;color:#2e7d32}' +
-    'tr.hwc-miss td{background:#fff3b0 !important}' +
+    '#hwc-panel button{font-family:inherit}' +
+    '#hwc-panel .tab{position:absolute;top:72px;left:-42px;width:42px;padding:14px 0 12px;border:0;border-radius:14px 0 0 14px;background:linear-gradient(160deg,#9a85e0,#7c63c9);color:#fff;cursor:pointer;box-shadow:-6px 8px 20px rgba(90,60,160,.28);display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;font-weight:700;line-height:1.15}' +
+    '#hwc-panel .tab:hover{filter:brightness(1.06)}' +
+    '#hwc-panel .tab .arw{font-size:11px;opacity:.85}' +
+    '#hwc-panel .tab .v{writing-mode:vertical-rl;letter-spacing:3px}' +
+    '#hwc-panel .tab .cnt{background:#fff;color:#7c63c9;border-radius:999px;min-width:26px;padding:2px 5px;text-align:center;font-weight:800}' +
+    '#hwc-panel .hd{background:linear-gradient(135deg,#9a85e0,#7c63c9);color:#fff;padding:16px 18px 14px;display:flex;align-items:center;justify-content:space-between}' +
+    '#hwc-panel .hd b{font-size:17px;font-weight:800;letter-spacing:-0.02em}' +
+    '#hwc-panel .hd .acts{display:flex;gap:2px}' +
+    '#hwc-panel .x,#hwc-panel .fold{background:rgba(255,255,255,.16);border:0;color:#fff;font-size:16px;cursor:pointer;line-height:1;width:28px;height:28px;border-radius:9px}' +
+    '#hwc-panel .x:hover,#hwc-panel .fold:hover{background:rgba(255,255,255,.28)}' +
+    '#hwc-panel .ctl{padding:14px 18px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;color:#7d7591;font-size:13px}' +
+    '#hwc-panel .ctl input[type=date]{padding:5px 8px;border:1px solid #ddd5f2;border-radius:10px;color:#2d2640;background:#fbfaff;font-family:inherit}' +
+    '#hwc-panel .chip{padding:5px 12px;border:1px solid #ddd5f2;color:#7d7591;background:#fff;border-radius:999px;cursor:pointer;font-size:12px;font-weight:600}' +
+    '#hwc-panel .chip:hover{border-color:#7c63c9;color:#7c63c9}' +
+    '#hwc-panel .chip.on{background:#7c63c9;border-color:#7c63c9;color:#fff}' +
+    '#hwc-panel .sum{margin:0 18px 8px;padding:10px 14px;background:#f4f1fb;border-radius:12px;font-size:13px;color:#7d7591}' +
+    '#hwc-panel .sum strong{color:#7c63c9;font-size:18px;font-weight:800}' +
+    '#hwc-panel ul{list-style:none;margin:0;padding:0 8px;overflow:auto;flex:1}' +
+    '#hwc-panel li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:10px 10px;border-bottom:1px solid #f0edf7;cursor:pointer;border-radius:10px}' +
+    '#hwc-panel li:hover{background:#f7f4fd}' +
+    '#hwc-panel .nm{font-weight:700;color:#2d2640}' +
+    '#hwc-panel .meta{grid-column:1/2;color:#958ea8;font-size:12px}' +
+    '#hwc-panel .dt{grid-row:1/3;grid-column:2;text-align:right;align-self:center;font-size:11px;color:#958ea8}' +
+    '#hwc-panel .dt b{display:block;color:#c2477a;font-size:13px;font-weight:700}' +
+    '#hwc-panel .ft{padding:12px 18px 16px;display:flex;gap:8px;border-top:1px solid #f0edf7}' +
+    '#hwc-panel .btn{flex:1;padding:10px;border:0;border-radius:12px;background:#7c63c9;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 6px 14px rgba(124,99,201,.28)}' +
+    '#hwc-panel .btn:hover{filter:brightness(1.06)}' +
+    '#hwc-panel .btn.sub{background:#efebfa;color:#5b47a3;box-shadow:none}' +
+    '#hwc-panel .empty{padding:28px 18px;text-align:center;color:#7c63c9;font-weight:600}' +
+    'tr.hwc-miss td{background:#efe9fc !important}' +
     'tr.hwc-hide{display:none !important}';
 
   var panel = document.createElement('div');
   panel.id = PANEL_ID;
   panel.innerHTML =
     '<style>' + css + '</style>' +
-    '<div class="hd"><b>숙제 안 한 학생</b><button class="x" title="닫기">×</button></div>' +
+    '<button class="tab" title="접기 / 펼치기"><span class="arw">▶</span><span class="v">숙제체크</span><span class="cnt">0</span></button>' +
+    '<div class="box">' +
+    '<div class="hd"><b>숙제 안 한 학생</b><span class="acts"><button class="fold" title="오른쪽으로 접기">»</button><button class="x" title="닫기">×</button></span></div>' +
     '<div class="ctl">기준일 <input type="date" class="d"> 이후 학습 <span style="flex-basis:100%;height:0"></span>' +
     '<button class="chip" data-n="1">어제</button><button class="chip" data-n="2">2일</button><button class="chip" data-n="3">3일</button><button class="chip" data-n="7">7일</button></div>' +
     '<div class="sum"></div><ul></ul>' +
-    '<div class="ft"><button class="btn copy">명단 복사</button><button class="btn sub only">표에서 안 한 학생만 보기</button></div>';
+    '<div class="ft"><button class="btn copy">명단 복사</button><button class="btn sub only">안 한 학생만 보기</button></div>' +
+    '</div>';
   document.body.appendChild(panel);
+
+  // 사이드 도어: 오른쪽으로 접었다 펼치기
+  var tabArw = panel.querySelector('.tab .arw');
+  function setFolded(f) {
+    panel.classList.toggle('folded', f);
+    tabArw.textContent = f ? '◀' : '▶';
+  }
+  panel.querySelector('.tab').onclick = function () { setFolded(!panel.classList.contains('folded')); };
+  panel.querySelector('.fold').onclick = function () { setFolded(true); };
 
   var dIn = panel.querySelector('.d'), ul = panel.querySelector('ul'), sum = panel.querySelector('.sum');
   var onlyBtn = panel.querySelector('.only');
@@ -132,6 +157,7 @@
       s.row.classList.toggle('hwc-miss', miss);
       s.row.classList.toggle('hwc-hide', onlyMode && !miss);
     });
+    panel.querySelector('.tab .cnt').textContent = missing.length;
     sum.innerHTML = '전체 ' + students.length + '명 중 <strong>' + missing.length + '명</strong> · ' + md(base) + ' 이후 학습 기록 없음';
     if (!missing.length) { ul.innerHTML = '<div class="empty">모두 숙제를 했어요 🎉</div>'; return; }
     ul.innerHTML = '';
@@ -159,7 +185,7 @@
   };
   onlyBtn.onclick = function () {
     onlyMode = !onlyMode;
-    onlyBtn.textContent = onlyMode ? '전체 학생 다시 보기' : '표에서 안 한 학생만 보기';
+    onlyBtn.textContent = onlyMode ? '전체 학생 보기' : '안 한 학생만 보기';
     render();
   };
   panel.querySelector('.copy').onclick = function () {
