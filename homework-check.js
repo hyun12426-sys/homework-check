@@ -165,7 +165,7 @@
         '<style>' + css + '</style>' +
         '<button class="tab" title="접기 / 펼치기"><span class="arw">▶</span><span class="v">숙제체크</span><span class="cnt">…</span></button>' +
         '<div class="box">' +
-        '<div class="hd"><b>숙제 안 한 학생<span class="ver">v' + VERSION + '</span></b><span class="acts"><button class="fold" title="오른쪽으로 접기">»</button><button class="x" title="닫기">×</button></span></div>' +
+        '<div class="hd"><b>숙제 안 한 학생<span class="ver">V' + VERSION + '</span></b><span class="acts"><button class="fold" title="오른쪽으로 접기">»</button><button class="x" title="닫기">×</button></span></div>' +
         '<div class="ctl">기준 <button class="chip" data-n="0">오늘</button><button class="chip" data-n="1">어제</button><button class="chip cal" title="달력에서 날짜 고르기">📅 날짜</button><input type="date" class="dpk" tabindex="-1"></div>' +
         '<div class="tabs"></div>' +
         '<div class="sum"></div><div class="warn" hidden></div><div class="sort"></div><ul></ul>' +
