@@ -137,10 +137,12 @@
         '#hwc-panel .empty,#hwc-panel .loading{padding:26px 18px;text-align:center;color:#7c63c9;font-weight:600}' +
         '#hwc-panel .loading small{display:block;color:#958ea8;font-weight:400;margin-top:6px}' +
         '#hwc-panel .warn{margin:0 18px 6px;font-size:12px;color:#c2477a}' +
-        '#hwc-panel .sort{margin:0 18px 6px;display:flex;justify-content:flex-end;align-items:center;gap:4px;font-size:12px;color:#958ea8}' +
-        '#hwc-panel .sort button{border:0;background:none;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:600;color:#958ea8;cursor:pointer}' +
-        '#hwc-panel .sort button:hover{color:#7c63c9}' +
-        '#hwc-panel .sort button.on{background:#efebfa;color:#5b47a3;font-weight:800}' +
+        '#hwc-panel .sort{margin:2px 18px 8px;display:flex;align-items:center;gap:8px;font-size:13px;color:#7d7591}' +
+        '#hwc-panel .sort .lb{flex:none;font-weight:600}' +
+        '#hwc-panel .sort .seg{flex:1;display:flex;gap:2px;padding:3px;background:#f4f1fb;border:1px solid #e4ddf6;border-radius:12px}' +
+        '#hwc-panel .sort button{flex:1 1 0;min-width:0;white-space:nowrap;border:0;background:none;padding:6px 2px;border-radius:9px;font-size:12px;font-weight:700;color:#7d7591;cursor:pointer}' +
+        '#hwc-panel .sort button:hover{color:#5b47a3;background:#fff}' +
+        '#hwc-panel .sort button.on{background:#7c63c9;color:#fff;box-shadow:0 3px 8px rgba(124,99,201,.3)}' +
         '#hwc-panel .low{display:inline-block;margin-top:2px;padding:1px 8px;border-radius:999px;background:#d92d20;color:#fff;font-size:12px;font-weight:800;font-style:normal}' +
         '#hwc-panel .bdg span.lowb{background:#d92d20;color:#fff}' +
         'tr.hwc-miss td{background:#fff3b0 !important}' +
@@ -334,7 +336,7 @@
         });
         var opts = SORTS[cat];
         sortEl.hidden = opts.length < 2;
-        sortEl.innerHTML = '정렬 ' + opts.map(function (o) { return '<button data-s="' + o[0] + '" class="' + (o[0] === how ? 'on' : '') + '">' + o[1] + '</button>'; }).join('');
+        sortEl.innerHTML = '<span class="lb">정렬</span><span class="seg">' + opts.map(function (o) { return '<button data-s="' + o[0] + '" class="' + (o[0] === how ? 'on' : '') + '">' + o[1] + '</button>'; }).join('') + '</span>';
         sortEl.querySelectorAll('button').forEach(function (b) { b.onclick = function () { state.sort[cat] = b.dataset.s; render(); }; });
         panel.querySelector('.tab .cnt').textContent = listFor('all').length;
         var label = { all: '숙제를 하나라도 안 한 학생', selena: '셀레나 미학습', lingo: '링고핏 미학습', voca: '보카핏 미완료', el: '이러닝(셀레나·헤이즐·단어장) 학습 기록 없음' }[cat];
