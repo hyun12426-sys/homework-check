@@ -125,6 +125,9 @@
         '#hwc-panel .box>ul{list-style:none;margin:0;padding:0 8px;overflow:auto;flex:1 1 auto;min-height:80px}' +
         '#hwc-panel li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:9px 10px;border-bottom:1px solid #f0edf7;cursor:pointer;border-radius:10px}' +
         '#hwc-panel li:hover{background:#f7f4fd}' +
+        '#hwc-panel li.grp{display:flex;justify-content:space-between;position:sticky;top:0;z-index:1;margin-top:6px;padding:7px 10px;border:0;border-radius:10px;background:#efebfa;color:#5b47a3;font-size:13px;font-weight:800;cursor:default}' +
+        '#hwc-panel li.grp:hover{background:#efebfa}' +
+        '#hwc-panel li.grp span{font-weight:600;color:#7d7591;font-size:12px}' +
         '#hwc-panel .nm{font-weight:700;color:#2d2640}' +
         '#hwc-panel .meta{grid-column:1/2;color:#958ea8;font-size:12px}' +
         '#hwc-panel .dt{grid-row:1/3;grid-column:2;text-align:right;align-self:center;font-size:11px;color:#958ea8}' +
@@ -354,7 +357,19 @@
         paintHere(new Set(list.map(function (s) { return s.name; })));
         if (!list.length) { ul.innerHTML = '<div class="empty">모두 숙제를 했어요 🎉</div>'; return; }
         ul.innerHTML = '';
+        // 오래된 순 · 최근 순일 때는 날짜마다 묶어서 보여 주기
+        var grouped = (cat === 'voca' || cat === 'el') && (how === 'old' || how === 'new');
+        var dayOf = function (s) { var t = cat === 'el' ? s.sortEl : s.sortVoca; if (!t) return '기록 없음'; var d = new Date(t); return (d.getFullYear() !== today.getFullYear() ? (d.getFullYear() % 100) + '년 ' : '') + md(d); };
+        var counts = {}; if (grouped) list.forEach(function (s) { var k = dayOf(s); counts[k] = (counts[k] || 0) + 1; });
+        var lastDay = null;
         list.forEach(function (s) {
+          if (grouped && dayOf(s) !== lastDay) {
+            lastDay = dayOf(s);
+            var g = document.createElement('li'); g.className = 'grp';
+            var gb = document.createElement('b'); gb.textContent = lastDay === '기록 없음' ? '기록 없음' : '마지막 ' + lastDay;
+            var gs = document.createElement('span'); gs.textContent = counts[lastDay] + '명';
+            g.appendChild(gb); g.appendChild(gs); ul.appendChild(g);
+          }
           var li = document.createElement('li');
           li.innerHTML = '<span class="nm"></span><span class="dt"></span><span class="meta"></span>';
           li.querySelector('.nm').textContent = s.name;
