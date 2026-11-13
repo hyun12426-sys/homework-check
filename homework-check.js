@@ -174,12 +174,12 @@
       var onlyBtn = panel.querySelector('.only'), tabArw = panel.querySelector('.tab .arw');
       // 지금 열어 둔 화면에 맞는 탭부터 보여 주기
       var startCat = /lingofit/i.test(location.pathname) ? 'lingo' : /vocafit/i.test(location.pathname) ? 'voca' : /MemberLMS\.asp/i.test(location.pathname) ? 'selena' : 'all';
-      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], sort: { all: 'many', el: 'old', voca: 'old', selena: 'grade', lingo: 'grade' } };
+      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], sort: { all: 'many', el: 'old', voca: 'old', selena: 'name', lingo: 'name' } };
       var LOW = 80; // 보카핏 점수가 이보다 낮으면 경고
       var SORTS = {
         all: [['many', '많이 안 한 순'], ['name', '이름순']],
-        selena: [['grade', '학년순'], ['book', '교재순'], ['tier', '티어순'], ['name', '이름순']],
-        lingo: [['grade', '학년순'], ['book', '교재순'], ['tier', '단계순'], ['name', '이름순']],
+        selena: [['name', '이름순'], ['grade', '학년순']],
+        lingo: [['name', '이름순'], ['grade', '학년순']],
         el: [['old', '오래된 순'], ['new', '최근 순'], ['name', '이름순']],
         voca: [['name', '이름순'], ['new', '최근 순'], ['old', '오래된 순']]
       };
