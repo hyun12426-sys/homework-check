@@ -63,6 +63,16 @@
   .side .h { background:var(--grad); color:#fff; padding:4px 8px; font-weight:bold; }
   .side div { padding:3px 8px; border-bottom:1px solid #f1f1f1; }
   @media (max-width:520px){ .result{grid-template-columns:1fr} }
+  .result { grid-template-columns:1fr 190px; }
+  .side .h small { font-size:10px; font-weight:600; opacity:.85; margin-left:4px; }
+  .side .it { display:flex; justify-content:space-between; align-items:center; gap:6px; padding:6px 8px; }
+  .side .it span { display:flex; gap:3px; }
+  .side i { font-style:normal; font-size:11px; font-weight:700; padding:1px 7px; border-radius:999px; }
+  .side .b-s { background:#fdecf3; color:#c2306b; } .side .b-l { background:#e3f5ee; color:#16805e; } .side .b-v { background:#fff1dc; color:#b86e00; }
+  .guide { display:grid; gap:8px; margin-top:14px; }
+  .guide > div { display:grid; grid-template-columns:92px 1fr; gap:12px; align-items:start; padding:12px 14px; background:#faf8fe; border:1px solid var(--line); border-radius:14px; font-size:15px; }
+  .guide > div > b { color:var(--pink); font-size:14px; padding-top:1px; }
+  @media (max-width:520px){ .guide > div { grid-template-columns:1fr; gap:4px; } }
 
   .faq details { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:12px 16px; margin-bottom:10px; }
   .faq summary { cursor:pointer; font-weight:bold; }
@@ -133,29 +143,30 @@
     <div class="step-hd"><span class="num">4</span><b>즐겨찾기 줄의 📋 숙제체크 누르기 <span class="tag daily">매일</span></b></div>
     <p>10~20초 기다리면 <b>오른쪽에 숙제 안 한 학생 명단</b>이 떠요. 학생 관리, 셀레나, 링고핏, 보카핏 화면을 한꺼번에 읽느라 조금 걸려요.</p>
     <div class="pic">
-      <div style="color:var(--sub);font-size:12px;margin-bottom:4px">예시: 오늘이 13일일 때</div>
+      <div style="color:var(--sub);font-size:12px;margin-bottom:4px">예시 화면</div>
       <div class="result">
         <div class="tbl">
-          <div>김OO · 26.11.12</div>
-          <div class="miss">이OO · 26.11.11</div>
-          <div>박OO · 26.11.12</div>
-          <div class="miss">최OO · 26.11.09</div>
+          <div>김OO · 초등4</div>
+          <div class="miss">이OO · 초등5</div>
+          <div>박OO · 초등3</div>
+          <div class="miss">최OO · 초등6</div>
         </div>
         <div class="side">
-          <div class="h">숙제 안 한 학생</div>
-          <div>최OO · 셀레나 보카핏</div>
-          <div>이OO · 링고핏</div>
+          <div class="h">숙제 안 한 학생 <small>V7</small></div>
+          <div class="it">최OO <span><i class="b-s">셀레나</i><i class="b-v">보카핏</i></span></div>
+          <div class="it">이OO <span><i class="b-l">링고핏</i></span></div>
         </div>
       </div>
+      <div class="arrow">↑ 안 한 학생은 표에서도 노란색으로 칠해져요</div>
     </div>
-    <p style="margin-top:12px">✔ 패널 위쪽 탭으로 골라 보세요.<br>
-    &nbsp;&nbsp;&nbsp;<b>전체</b> 하나라도 안 한 학생, 무엇을 안 했는지 표시 · <b>셀레나</b> 미학습 · <b>링고핏</b> 미학습 · <b>보카핏</b> 미완료(마지막 날짜와 점수, 80점 미만은 빨간색)<br>
-    ✔ 기본은 <b>어제 이후 기록이 없는 학생</b>이에요. (오늘이 13일이면 12일에 안 한 학생)<br>
-    ✔ <b>오늘</b>을 누르면 오늘 아직 안 한 학생, <b>📅 날짜</b>를 누르면 달력에서 고른 날 이후로 안 한 학생이 나와요.<br>
-    ✔ <b>정렬</b> 막대로 순서를 바꿀 수 있어요. 보카핏은 최근 순 · 오래된 순으로 고르면 날짜별로 묶여서 보여요.<br>
-    ✔ 명단의 학생 이름을 누르면 지금 화면의 표에서 그 학생으로 이동해요.<br>
-    ✔ <b>명단 복사</b>를 누르면 문자나 카톡에 바로 붙여 넣을 수 있어요.<br>
-    ✔ 명단이 표를 가리면 위쪽 <b>»</b> 를 누르세요. 오른쪽 끝으로 접히고, 남은 <b>세로 탭</b>을 누르면 다시 펼쳐져요.</p>
+    <div class="guide">
+      <div><b>탭</b><span><b>전체 · 셀레나 · 링고핏 · 보카핏</b> 중에 골라 보세요. 전체 탭은 학생마다 무엇을 안 했는지 같이 보여 줘요.</span></div>
+      <div><b>기준</b><span>처음에는 <b>어제 이후</b> 기록이 없는 학생이 나와요. <b>오늘</b>을 누르면 오늘 아직 안 한 학생, <b>📅 날짜</b>를 누르면 고른 날 이후로 안 한 학생이 나와요.</span></div>
+      <div><b>정렬</b><span>이름순 · 학년순으로 바꿀 수 있어요. 보카핏은 최근 순 · 오래된 순을 고르면 날짜별로 묶여서 보이고, 80점 미만은 빨간색으로 표시돼요.</span></div>
+      <div><b>명단 복사</b><span>누르면 명단이 복사돼요. 문자나 카톡에 바로 붙여 넣으세요.</span></div>
+      <div><b>이름 누르기</b><span>명단에서 학생 이름을 누르면 지금 화면의 표에서 그 학생으로 이동해요.</span></div>
+      <div><b>접기 »</b><span>명단이 표를 가리면 위쪽 <b>»</b>를 누르세요. 오른쪽으로 접히고, 남은 세로 탭을 누르면 다시 펼쳐져요.</span></div>
+    </div>
   </div>
 
   <h2 class="sec">잘 안 될 때</h2>
