@@ -6,7 +6,7 @@
   var MAIN = function () {
     (async function () {
       var PANEL_ID = 'hwc-panel';
-      var VERSION = '8'; // 고칠 때마다 1씩 올리기 (안내 페이지 버튼에도 자동으로 표시됨)
+      var VERSION = '9'; // 고칠 때마다 1씩 올리기 (안내 페이지 버튼에도 자동으로 표시됨)
       var UPDATED = '26.11.13'; // 고친 날짜 (연.월.일) — 안내 페이지 버튼에 '26년 11월 13일'로 표시
       var old = document.getElementById(PANEL_ID);
       if (old) { if (old._cleanup) old._cleanup(); old.remove(); }
@@ -182,12 +182,12 @@
       var onlyBtn = panel.querySelector('.only'), tabArw = panel.querySelector('.tab .arw');
       // 지금 열어 둔 화면에 맞는 탭부터 보여 주기
       var startCat = /lingofit/i.test(location.pathname) ? 'lingo' : /vocafit/i.test(location.pathname) ? 'voca' : /MemberLMS\.asp/i.test(location.pathname) ? 'selena' : 'all';
-      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], sort: { all: 'many', el: 'old', voca: 'old', selena: 'name', lingo: 'name' } };
+      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], sort: { all: 'many', el: 'old', voca: 'new', selena: 'new', lingo: 'new' } };
       var LOW = 80; // 보카핏 점수가 이보다 낮으면 경고
       var SORTS = {
         all: [['many', '많이 안 한 순'], ['name', '이름순']],
-        selena: [['name', '이름순'], ['grade', '학년순']],
-        lingo: [['name', '이름순'], ['grade', '학년순']],
+        selena: [['name', '이름순'], ['grade', '학년순'], ['new', '최근 순'], ['old', '오래된 순']],
+        lingo: [['name', '이름순'], ['grade', '학년순'], ['new', '최근 순'], ['old', '오래된 순']],
         el: [['old', '오래된 순'], ['new', '최근 순'], ['name', '이름순']],
         voca: [['name', '이름순'], ['new', '최근 순'], ['old', '오래된 순']]
       };
@@ -212,6 +212,7 @@
       function cleanup() {
         hereRows.forEach(function (r) { r.classList.remove('hwc-miss', 'hwc-hide'); });
         frames.forEach(function (f) { f.remove(); });
+        clearInterval(autoTimer); document.removeEventListener('visibilitychange', onVisible);
       }
       panel._cleanup = cleanup;
       panel.querySelector('.x').onclick = function () { cleanup(); panel.remove(); };
@@ -258,6 +259,25 @@
           out[nm] = out[nm] ? out[nm] + ', ' + bk : bk;
           if (!TIER[key][nm]) TIER[key][nm] = clean(r.cells[cT] ? r.cells[cT].textContent : '');
         });
+        // 최근 순 정렬용: 미학습자 체크를 끄고 최근 한 달 기록을 읽어 학생별 마지막 학습일 찾기
+        try {
+          var monthAgo = addDays(today, -31), lf = from < monthAgo ? from : monthAgo;
+          setRange(d, lf, today); var ns = d.getElementById('NS'); if (ns) ns.checked = false;
+          var b2 = d.querySelectorAll('#M_Result tr').length;
+          w[fn](1);
+          var h2 = headerIndex(d), c2 = h2('회원명', 1), cD = h2('일자', key === 'lingo' ? 5 : 6);
+          var dated = function () { return dataRows(d).some(function (r) { return /\d{1,2}\.\d{1,2}/.test(r.cells[cD] ? r.cells[cD].textContent : ''); }); };
+          for (var k = 0; k < 60 && !dated(); k++) await sleep(250); // 날짜가 있는 표가 올 때까지 (최대 15초)
+          await waitStable(d, -1, 900);
+          LAST[key] = {};
+          dataRows(d).forEach(function (r) {
+            var nm = clean(r.cells[c2] ? r.cells[c2].textContent : ''); if (!nm) return;
+            var t = clean(r.cells[cD] ? r.cells[cD].textContent : ''), dt = null, m;
+            if ((m = t.match(/(\d{4})\.(\d{1,2})\.(\d{1,2})/))) dt = new Date(+m[1], +m[2] - 1, +m[3]);
+            else if ((m = t.match(/(\d{1,2})\.(\d{1,2})/))) { var y = today.getFullYear(); if (+m[1] > today.getMonth() + 1) y--; dt = new Date(y, +m[1] - 1, +m[2]); }
+            if (dt && (!LAST[key][nm] || dt > LAST[key][nm])) LAST[key][nm] = dt;
+          });
+        } catch (e) {}
         return out;
       }
       async function loadVoca() {
@@ -275,7 +295,8 @@
         return out;
       }
 
-      var members = [], voca = {}, selena = {}, lingo = {}, TIER = { selena: {}, lingo: {} };
+      function lastT(s, cat) { return (cat === 'el' ? s.sortEl : cat === 'selena' ? s.sortSel : cat === 'lingo' ? s.sortLin : s.sortVoca) || 0; }
+      var members = [], voca = {}, selena = {}, lingo = {}, TIER = { selena: {}, lingo: {} }, LAST = { selena: {}, lingo: {} };
       // 학년 순서: 유치 → 초등 → 중 → 고, 그 안에서 숫자
       function gradeKey(g) {
         g = String(g || ''); var n = parseInt((g.match(/\d+/) || ['0'])[0], 10);
@@ -308,8 +329,8 @@
         function get(nm) { return byName[nm] || (byName[nm] = { name: nm, grade: '', book: '', miss: {}, info: {} }); }
         members.forEach(function (m) {
         });
-        Object.keys(selena).forEach(function (nm) { var s = get(nm); s.miss.selena = true; s.info.selena = selena[nm]; });
-        Object.keys(lingo).forEach(function (nm) { var s = get(nm); s.miss.lingo = true; s.info.lingo = lingo[nm]; });
+        Object.keys(selena).forEach(function (nm) { var s = get(nm); s.miss.selena = true; s.info.selena = selena[nm]; s.sortSel = LAST.selena[nm] ? LAST.selena[nm].getTime() : 0; });
+        Object.keys(lingo).forEach(function (nm) { var s = get(nm); s.miss.lingo = true; s.info.lingo = lingo[nm]; s.sortLin = LAST.lingo[nm] ? LAST.lingo[nm].getTime() : 0; });
         Object.keys(voca).forEach(function (nm) {
           var v = voca[nm];
           if (!v.date || v.date < base) { var s = get(nm); s.miss.voca = true; s.info.voca = (v.dateText ? '마지막 ' + v.dateText.slice(2) + wd(v.date) : '기록 없음') + (v.score ? ' · ' + v.score + '점' : ''); s.sortVoca = v.date ? v.date.getTime() : 0;
@@ -348,7 +369,7 @@
           if (how === 'tier') return String((TIER[cat] || {})[a.name] || '').localeCompare(String((TIER[cat] || {})[b.name] || ''), 'ko', { numeric: true }) || byName(a, b);
           if (how === 'many') return Object.keys(b.miss).length - Object.keys(a.miss).length || byName(a, b);
           if (how === 'score') { var sa = a.score == null ? 999 : a.score, sb = b.score == null ? 999 : b.score; return sa - sb || byName(a, b); }
-          var ta = cat === 'el' ? (a.sortEl || 0) : (a.sortVoca || 0), tb = cat === 'el' ? (b.sortEl || 0) : (b.sortVoca || 0);
+          var ta = lastT(a, cat), tb = lastT(b, cat);
           return (how === 'new' ? tb - ta : ta - tb) || byName(a, b);
         });
         var opts = SORTS[cat];
@@ -358,7 +379,7 @@
         panel.querySelector('.tab .cnt').textContent = listFor('all').length;
         var label = { all: '숙제를 하나라도 안 한 학생', selena: '셀레나 미학습', lingo: '링고핏 미학습', voca: '보카핏 미완료', el: '이러닝(셀레나·헤이즐·단어장) 학습 기록 없음' }[cat];
         sum.className = 'sum c-' + cat;
-        sum.innerHTML = '<strong>' + list.length + '명</strong> · ' + md(base) + ' 이후 ' + label + (state.checkedAt ? '<span class="at">' + hm(state.checkedAt) + '에 확인한 결과예요</span>' : '');
+        sum.innerHTML = '<strong>' + list.length + '명</strong> · ' + md(base) + ' 이후 ' + label + (state.checkedAt ? '<span class="at">' + hm(state.checkedAt) + '에 확인한 결과예요 · 5분마다 자동으로 다시 확인해요</span>' : '');
         warnEl.hidden = !state.failed.length;
         warnEl.textContent = state.failed.length ? state.failed.join(', ') + ' 화면을 읽지 못했어요. 어드민 로그인이 풀렸을 수 있어요. 새로 고침(F5)이나 다시 로그인한 뒤 눌러 주세요.' : '';
         if (state.failed.indexOf('학생 관리') >= 0) {
@@ -373,15 +394,15 @@
         if (!list.length) { ul.innerHTML = '<div class="empty">모두 숙제를 했어요 🎉</div>'; return; }
         ul.innerHTML = '';
         // 오래된 순 · 최근 순일 때는 날짜마다 묶어서 보여 주기
-        var grouped = (cat === 'voca' || cat === 'el') && (how === 'old' || how === 'new');
-        var dayOf = function (s) { var t = cat === 'el' ? s.sortEl : s.sortVoca; if (!t) return '기록 없음'; var d = new Date(t); return (d.getFullYear() !== today.getFullYear() ? (d.getFullYear() % 100) + '년 ' : '') + md(d); };
+        var grouped = cat !== 'all' && (how === 'old' || how === 'new');
+        var dayOf = function (s) { var t = lastT(s, cat); if (!t) return (cat === 'selena' || cat === 'lingo') ? '한 달 넘게 기록 없음' : '기록 없음'; var d = new Date(t); return (d.getFullYear() !== today.getFullYear() ? (d.getFullYear() % 100) + '년 ' : '') + md(d); };
         var counts = {}; if (grouped) list.forEach(function (s) { var k = dayOf(s); counts[k] = (counts[k] || 0) + 1; });
         var lastDay = null;
         list.forEach(function (s) {
           if (grouped && dayOf(s) !== lastDay) {
             lastDay = dayOf(s);
             var g = document.createElement('li'); g.className = 'grp';
-            var gb = document.createElement('b'); gb.textContent = lastDay === '기록 없음' ? '기록 없음' : '마지막 ' + lastDay;
+            var gb = document.createElement('b'); gb.textContent = /없음$/.test(lastDay) ? lastDay : '마지막 ' + lastDay;
             var gs = document.createElement('span'); gs.textContent = counts[lastDay] + '명';
             g.appendChild(gb); g.appendChild(gs); ul.appendChild(g);
           }
@@ -400,7 +421,7 @@
             li.querySelector('.meta').textContent = [s.grade, s.book].filter(Boolean).join(' · ');
           } else {
             var bb = document.createElement('b');
-            bb.textContent = cat === 'selena' || cat === 'lingo' ? '미학습' : s.info[cat].split(' · ')[0];
+            bb.textContent = cat === 'selena' || cat === 'lingo' ? (lastT(s, cat) ? '마지막 ' + md(new Date(lastT(s, cat))) : '한 달 넘게 없음') : s.info[cat].split(' · ')[0];
             dt.appendChild(bb);
             if (cat === 'voca' && s.score != null) {
               if (s.score < LOW) { var em = document.createElement('em'); em.className = 'low'; em.textContent = '⚠ ' + s.score + '점'; dt.appendChild(em); }
@@ -431,6 +452,12 @@
         if (now.getTime() !== today.getTime()) { today = now; dpk.max = ymd(today); }
         try { await fetchAll(true); } finally { rfBtn.disabled = false; }
       };
+      // 실시간: 패널이 열려 있는 동안 5분마다 자동으로 다시 확인, 다른 창에 있다 돌아왔을 때도 5분 지났으면 다시 확인
+      var AUTO_MS = 5 * 60 * 1000;
+      function stale() { return !state.loading && state.checkedAt && (new Date() - state.checkedAt) >= AUTO_MS - 1000; }
+      var autoTimer = setInterval(function () { if (!document.hidden && stale()) rfBtn.onclick(); }, 30000);
+      function onVisible() { if (!document.hidden && stale()) rfBtn.onclick(); }
+      document.addEventListener('visibilitychange', onVisible);
       panel.querySelector('.chip.cal').onclick = function () {
         if (state.loading) return;
         dpk.value = ymd(addDays(today, -state.n));
