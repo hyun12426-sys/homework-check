@@ -6,7 +6,7 @@
   var MAIN = function () {
     (async function () {
       var PANEL_ID = 'hwc-panel';
-      var VERSION = '10'; // 고칠 때마다 1씩 올리기 (안내 페이지 버튼에도 자동으로 표시됨)
+      var VERSION = '11'; // 고칠 때마다 1씩 올리기 (안내 페이지 버튼에도 자동으로 표시됨)
       var UPDATED = '26.11.13'; // 고친 날짜 (연.월.일) — 안내 페이지 버튼에 '26년 11월 13일'로 표시
       var old = document.getElementById(PANEL_ID);
       if (old) { if (old._cleanup) old._cleanup(); old.remove(); }
@@ -138,8 +138,11 @@
         '#hwc-panel .box>ul{list-style:none;margin:0;padding:0 8px;overflow:auto;flex:1 1 auto;min-height:80px}' +
         '#hwc-panel li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:9px 10px;border-bottom:1px solid #f0edf7;cursor:pointer;border-radius:10px}' +
         '#hwc-panel li:hover{background:#f7f4fd}' +
-        '#hwc-panel li.grp{display:flex;justify-content:space-between;margin-top:6px;padding:7px 10px;border:0;border-radius:10px;background:#efebfa;color:#5b47a3;font-size:13px;font-weight:800;cursor:default}' +
-        '#hwc-panel li.grp:hover{background:#efebfa}' +
+        '#hwc-panel li.grp{display:flex;justify-content:space-between;margin-top:6px;padding:7px 10px;border:0;border-radius:10px;background:#efebfa;color:#5b47a3;font-size:13px;font-weight:800;cursor:pointer;user-select:none}' +
+        '#hwc-panel li.grp:hover{background:#e4ddf6}' +
+        '#hwc-panel li.grp b::before{content:"▾";display:inline-block;width:16px;transition:transform .15s}' +
+        '#hwc-panel li.grp.shut b::before{transform:rotate(-90deg)}' +
+        '#hwc-panel li.grp.shut{opacity:.75}' +
         '#hwc-panel li.grp span{font-weight:600;color:#7d7591;font-size:12px}' +
         '#hwc-panel .nm{font-weight:700;color:#2d2640}' +
         '#hwc-panel .meta{grid-column:1/2;color:#958ea8;font-size:12px}' +
@@ -182,7 +185,7 @@
       var onlyBtn = panel.querySelector('.only'), tabArw = panel.querySelector('.tab .arw');
       // 지금 열어 둔 화면에 맞는 탭부터 보여 주기
       var startCat = /lingofit/i.test(location.pathname) ? 'lingo' : /vocafit/i.test(location.pathname) ? 'voca' : /MemberLMS\.asp/i.test(location.pathname) ? 'selena' : 'all';
-      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], sort: { all: 'many', el: 'old', voca: 'new', selena: 'new', lingo: 'new' } };
+      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], shut: {}, sort: { all: 'many', el: 'old', voca: 'new', selena: 'new', lingo: 'new' } };
       var LOW = 80; // 보카핏 점수가 이보다 낮으면 경고
       var SORTS = {
         all: [['many', '많이 안 한 순'], ['name', '이름순'], ['grade', '학년순']],
@@ -398,16 +401,25 @@
         var grouped = byGrade || (cat !== 'all' && (how === 'old' || how === 'new'));
         var dayOf = function (s) { if (byGrade) return s.grade || '학년 정보 없음'; var t = lastT(s, cat); if (!t) return (cat === 'selena' || cat === 'lingo') ? '한 달 넘게 기록 없음' : '기록 없음'; var d = new Date(t); return (d.getFullYear() !== today.getFullYear() ? (d.getFullYear() % 100) + '년 ' : '') + md(d); };
         var counts = {}; if (grouped) list.forEach(function (s) { var k = dayOf(s); counts[k] = (counts[k] || 0) + 1; });
-        var lastDay = null;
+        var lastDay = null, shutNow = false;
         list.forEach(function (s) {
           if (grouped && dayOf(s) !== lastDay) {
             lastDay = dayOf(s);
-            var g = document.createElement('li'); g.className = 'grp';
+            var gk = cat + '|' + how + '|' + lastDay;
+            shutNow = !!state.shut[gk];
+            var g = document.createElement('li'); g.className = 'grp' + (shutNow ? ' shut' : '');
+            g.title = shutNow ? '눌러서 펼치기' : '눌러서 접기';
+            g.onclick = (function (k) { return function () {
+              var shut = state.shut[k] = !state.shut[k];
+              this.classList.toggle('shut', shut); this.title = shut ? '눌러서 펼치기' : '눌러서 접기';
+              for (var n = this.nextElementSibling; n && !n.classList.contains('grp'); n = n.nextElementSibling) n.style.display = shut ? 'none' : '';
+            }; })(gk);
             var gb = document.createElement('b'); gb.textContent = (byGrade || /없음$/.test(lastDay)) ? lastDay : '마지막 ' + lastDay;
             var gs = document.createElement('span'); gs.textContent = counts[lastDay] + '명';
             g.appendChild(gb); g.appendChild(gs); ul.appendChild(g);
           }
           var li = document.createElement('li');
+          if (grouped && shutNow) li.style.display = 'none';
           li.innerHTML = '<span class="nm"></span><span class="dt"></span><span class="meta"></span>';
           li.querySelector('.nm').textContent = s.name;
           var dt = li.querySelector('.dt');
