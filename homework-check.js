@@ -1,5 +1,5 @@
 /* 삼성영어 숙제 체크 v2 — 원장 어드민 어느 화면에서나 실행
-   - 학생 관리(이러닝 최근학습일), 셀레나 관리, LingoFit 관리, VocaFit 관리를 숨은 창으로 읽어서
+   - 학생 관리(학생 명단 · 학년), 셀레나 관리, LingoFit 관리, VocaFit 관리를 숨은 창으로 읽어서
      숙제 안 한 학생을 한 패널에 모아 보여 줌
    - 원장님이 로그인한 화면 안에서만 동작. 학생 정보를 외부로 보내지 않음. */
 (function () {
@@ -19,8 +19,7 @@
         { key: 'all', label: '전체' },
         { key: 'selena', label: '셀레나' },
         { key: 'lingo', label: '링고핏' },
-        { key: 'voca', label: '보카핏' },
-        { key: 'el', label: '이러닝' }
+        { key: 'voca', label: '보카핏' }
       ];
       var SHORT = { selena: '셀레나', lingo: '링고핏', voca: '보카핏', el: '이러닝' };
 
@@ -292,7 +291,6 @@
         members.forEach(function (m) { byName[m.name] = { name: m.name, grade: m.grade, book: m.book, miss: {}, info: {} }; });
         function get(nm) { return byName[nm] || (byName[nm] = { name: nm, grade: '', book: '', miss: {}, info: {} }); }
         members.forEach(function (m) {
-          if (!m.elDate || m.elDate < base) { var s = get(m.name); s.miss.el = true; s.info.el = m.elText ? '마지막 ' + m.elText + wd(m.elDate) : '기록 없음'; s.sortEl = m.elDate ? m.elDate.getTime() : 0; }
         });
         Object.keys(selena).forEach(function (nm) { var s = get(nm); s.miss.selena = true; s.info.selena = selena[nm]; });
         Object.keys(lingo).forEach(function (nm) { var s = get(nm); s.miss.lingo = true; s.info.lingo = lingo[nm]; });
