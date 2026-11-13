@@ -35,11 +35,12 @@
   .how li { display:flex; align-items:center; gap:10px; margin:0; font-size:16px; }
   .how .hn { flex:none; width:22px; height:22px; border-radius:50%; background:var(--pink-soft); color:var(--pink); font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
   .drag-wrap { text-align:center; padding:18px 0 6px; }
-  .drag .v { display:inline-block; margin-left:6px; padding:3px 10px; border-radius:999px; background:rgba(255,255,255,.22); font-size:13px; font-weight:600; letter-spacing:0; vertical-align:middle; }
-  .ver-note { margin:14px auto 0; max-width:420px; font-size:14px; color:var(--ink); }
+  .drag .l1 { display:flex; align-items:center; gap:8px; }
+  .drag .l2 { font-size:13px; font-weight:500; opacity:.85; letter-spacing:0; }
+  .drag .v { display:inline-block; padding:3px 10px; border-radius:999px; background:rgba(255,255,255,.22); font-size:13px; font-weight:600; letter-spacing:0; vertical-align:middle; }
+  .ver-note { margin:14px 0 0; font-size:14px; color:var(--sub); text-align:center; }
   .ver-note b { color:var(--pink); font-weight:800; }
-  .ver-note span { display:block; margin-top:4px; font-size:13px; color:var(--sub); }
-  .drag { display:inline-block; background:var(--grad); color:#fff; text-decoration:none; font-weight:bold; font-size:22px; padding:14px 30px; border-radius:999px; cursor:grab; box-shadow:0 10px 24px rgba(124,99,201,.4); animation:wiggle 2.4s ease-in-out infinite; }
+  .drag { display:inline-flex; flex-direction:column; align-items:center; gap:3px; line-height:1.25; background:var(--grad); color:#fff; text-decoration:none; font-weight:bold; font-size:22px; padding:14px 30px; border-radius:999px; cursor:grab; box-shadow:0 10px 24px rgba(124,99,201,.4); animation:wiggle 2.4s ease-in-out infinite; }
   @keyframes wiggle { 0%,85%,100%{transform:translateY(0)} 90%{transform:translateY(-6px)} 95%{transform:translateY(0)} }
   @media (prefers-reduced-motion:reduce){ .drag{animation:none} }
 
@@ -107,12 +108,12 @@
       <li><span class="hn">3</span><span>위쪽 <b>즐겨찾기 줄</b>까지 끌고 가서 손을 떼요.</span></li>
     </ol>
     <div class="drag-wrap">
-      <a class="drag" href="__BOOKMARKLET__" onclick="alert('누르지 말고, 마우스로 꾹 잡아서 위쪽 즐겨찾기 줄로 끌어 올려 주세요!');return false;">📋 숙제 체크 <small class="v">v__VERSION__ · __UPDATED__</small></a>
-      <p class="ver-note"><span>버튼에 적힌 <b>v__VERSION__ · __UPDATED__</b>가 최신 버전과 고친 날짜예요. 즐겨찾기 줄의 버튼 이름에도 그대로 들어가요.<br>즐겨찾기 줄의 숫자가 이보다 작으면, 그 버튼을 지우고 다시 끌어 올려 주세요.</span></p>
+      <a class="drag" href="__BOOKMARKLET__" onclick="alert('누르지 말고, 마우스로 꾹 잡아서 위쪽 즐겨찾기 줄로 끌어 올려 주세요!');return false;"><span class="l1">📋 숙제 체크 <small class="v">v__VERSION__</small></span><span class="l2">__UPDATED__</span></a>
+      <p class="ver-note">즐겨찾기 줄의 버튼이 <b>v__VERSION__</b>보다 낮으면 지우고 다시 끌어 올려 주세요.</p>
     </div>
     <div class="pic">
       <div class="bar"><span class="dot"></span><span class="url">주소창</span></div>
-      <div class="bmbar"><span>YouTube</span><span>인스타</span><span class="mine">📋 숙제 체크</span></div>
+      <div class="bmbar"><span>YouTube</span><span>인스타</span><span class="mine">📋 숙제 체크 v__VERSION__</span></div>
       <div class="arrow">↑ 즐겨찾기 줄에 📋 숙제 체크가 생기면 설치 끝!</div>
     </div>
   </div>

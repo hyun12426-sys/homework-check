@@ -9,5 +9,5 @@ const href = 'javascript:' + encodeURIComponent(src);
 const tpl = fs.readFileSync(path.join(__dirname, 'index.template.html'), 'utf8');
 const version = (src.match(/var VERSION = '([^']+)'/) || [, '?'])[1];
 const updated = (src.match(/var UPDATED = '([^']+)'/) || [, ''])[1];
-fs.writeFileSync(path.join(__dirname, 'index.html'), tpl.replace('__BOOKMARKLET__', href.replace(/"/g, '&quot;')).split('__VERSION__').join(version).split('__UPDATED__').join(updated));
+fs.writeFileSync(path.join(__dirname, 'index.html'), tpl.replace('__BOOKMARKLET__', href.replace(/"/g, '&quot;')).split('__VERSION__').join(version).split('__UPDATED__').join(updated.replace(/^(\d+)\.(\d+)\.(\d+)$/, function (_, y, m, d) { return y + '년 ' + (+m) + '월 ' + (+d) + '일'; })));
 console.log('index.html 생성 완료 (' + href.length + '자, 버전 v' + version + ' · ' + updated + ')');
