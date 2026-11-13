@@ -183,5 +183,9 @@
     <p class="disclaimer">아는 원장님들끼리 무료로 나눠 쓰는 비공식 도우미예요. 삼성영어 본사와 관계없는 개인 도구이고, 본사에서 요청하면 바로 사용을 멈춰요.</p>
   </footer>
 </main>
+<script>
+// 주소창 맨 뒤에 지금 버전 표시 (?v=7)
+try { if (new URLSearchParams(location.search).get('v') !== '__VERSION__') history.replaceState(null, '', location.pathname + '?v=__VERSION__' + location.hash); } catch (e) {}
+</script>
 </body>
 </html>
