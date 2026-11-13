@@ -31,7 +31,8 @@
       function dateLong(t) { var m = String(t || '').match(/(\d{4})\.(\d{2})\.(\d{2})/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
       function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
       function ymd(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
-      function md(d) { return (d.getMonth() + 1) + '/' + d.getDate(); }
+      function wd(d) { return d ? '(' + '일월화수목금토'.charAt(d.getDay()) + ')' : ''; }
+      function md(d) { return (d.getMonth() + 1) + '/' + d.getDate() + wd(d); }
       function dot(d) { return String(d.getFullYear()).slice(2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + ('0' + d.getDate()).slice(-2); }
       function dataRows(doc) {
         return Array.prototype.filter.call(doc.querySelectorAll('#M_Result tr'), function (r) {
@@ -106,10 +107,13 @@
         '#hwc-panel .hd .acts{display:flex;gap:4px}' +
         '#hwc-panel .x,#hwc-panel .fold{background:rgba(255,255,255,.16);border:0;color:#fff;font-size:16px;cursor:pointer;line-height:1;width:28px;height:28px;border-radius:9px}' +
         '#hwc-panel .x:hover,#hwc-panel .fold:hover{background:rgba(255,255,255,.28)}' +
-        '#hwc-panel .ctl{padding:12px 18px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;color:#7d7591;font-size:13px}' +
-        '#hwc-panel .chip{padding:5px 12px;border:1px solid #ddd5f2;color:#7d7591;background:#fff;border-radius:999px;cursor:pointer;font-size:12px;font-weight:600}' +
+        '#hwc-panel .ctl{padding:12px 14px 8px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;color:#7d7591;font-size:13px}' +
+        '#hwc-panel .chip{padding:5px 9px;border:1px solid #ddd5f2;color:#7d7591;background:#fff;border-radius:999px;cursor:pointer;font-size:12px;font-weight:600}' +
         '#hwc-panel .chip:hover{border-color:#7c63c9;color:#7c63c9}' +
         '#hwc-panel .chip.on{background:#7c63c9;border-color:#7c63c9;color:#fff}' +
+        '#hwc-panel .ctl{position:relative}' +
+        '#hwc-panel .dpk{position:absolute;right:18px;bottom:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none}' +
+        '#hwc-panel .dpk.show{position:static;width:auto;height:auto;opacity:1;pointer-events:auto;border:1px solid #ddd5f2;border-radius:8px;padding:3px 6px;font-size:12px}' +
         '#hwc-panel .tabs{display:flex;gap:0;padding:0 10px;border-bottom:1px solid #f0edf7}' +
         '#hwc-panel .tb{flex:1 1 0;min-width:0;white-space:nowrap;border:0;background:none;padding:9px 2px;font-size:13px;font-weight:700;color:#958ea8;cursor:pointer;border-bottom:2px solid transparent}' +
         '#hwc-panel .tb.on{color:#7c63c9;border-bottom-color:#7c63c9}' +
@@ -149,7 +153,7 @@
         '<button class="tab" title="접기 / 펼치기"><span class="arw">▶</span><span class="v">숙제체크</span><span class="cnt">…</span></button>' +
         '<div class="box">' +
         '<div class="hd"><b>숙제 안 한 학생</b><span class="acts"><button class="fold" title="오른쪽으로 접기">»</button><button class="x" title="닫기">×</button></span></div>' +
-        '<div class="ctl">기준 <button class="chip" data-n="1">어제</button><button class="chip" data-n="2">2일</button><button class="chip" data-n="3">3일</button><button class="chip" data-n="7">7일</button></div>' +
+        '<div class="ctl">기준 <button class="chip" data-n="0">오늘</button><button class="chip" data-n="1">어제</button><button class="chip" data-n="2">2일</button><button class="chip" data-n="3">3일</button><button class="chip" data-n="7">7일</button><button class="chip cal" title="달력에서 날짜 고르기">📅 날짜</button><input type="date" class="dpk" tabindex="-1"></div>' +
         '<div class="tabs"></div>' +
         '<div class="sum"></div><div class="warn" hidden></div><div class="sort"></div><ul></ul>' +
         '<div class="ft"><button class="btn copy">명단 복사</button><button class="btn sub only">안 한 학생만 보기</button></div>' +
@@ -272,13 +276,13 @@
         members.forEach(function (m) { byName[m.name] = { name: m.name, grade: m.grade, book: m.book, miss: {}, info: {} }; });
         function get(nm) { return byName[nm] || (byName[nm] = { name: nm, grade: '', book: '', miss: {}, info: {} }); }
         members.forEach(function (m) {
-          if (!m.elDate || m.elDate < base) { var s = get(m.name); s.miss.el = true; s.info.el = m.elText ? '마지막 ' + m.elText : '기록 없음'; s.sortEl = m.elDate ? m.elDate.getTime() : 0; }
+          if (!m.elDate || m.elDate < base) { var s = get(m.name); s.miss.el = true; s.info.el = m.elText ? '마지막 ' + m.elText + wd(m.elDate) : '기록 없음'; s.sortEl = m.elDate ? m.elDate.getTime() : 0; }
         });
         Object.keys(selena).forEach(function (nm) { var s = get(nm); s.miss.selena = true; s.info.selena = selena[nm]; });
         Object.keys(lingo).forEach(function (nm) { var s = get(nm); s.miss.lingo = true; s.info.lingo = lingo[nm]; });
         Object.keys(voca).forEach(function (nm) {
           var v = voca[nm];
-          if (!v.date || v.date < base) { var s = get(nm); s.miss.voca = true; s.info.voca = (v.dateText ? '마지막 ' + v.dateText.slice(2) : '기록 없음') + (v.score ? ' · ' + v.score + '점' : ''); s.sortVoca = v.date ? v.date.getTime() : 0;
+          if (!v.date || v.date < base) { var s = get(nm); s.miss.voca = true; s.info.voca = (v.dateText ? '마지막 ' + v.dateText.slice(2) + wd(v.date) : '기록 없음') + (v.score ? ' · ' + v.score + '점' : ''); s.sortVoca = v.date ? v.date.getTime() : 0;
             var sc = parseInt(v.score, 10); s.score = isNaN(sc) ? null : sc; }
         });
         state.students = Object.keys(byName).map(function (k) { return byName[k]; });
@@ -292,7 +296,10 @@
       }
 
       function render() {
-        panel.querySelectorAll('.chip').forEach(function (b) { b.classList.toggle('on', +b.dataset.n === state.n); });
+        panel.querySelectorAll('.chip[data-n]').forEach(function (b) { b.classList.toggle('on', !state.custom && +b.dataset.n === state.n); });
+        var calBtn = panel.querySelector('.chip.cal');
+        calBtn.classList.toggle('on', !!state.custom);
+        calBtn.textContent = state.custom ? '📅 ' + md(addDays(today, -state.n)) : '📅 날짜';
         if (state.loading) return;
         var base = addDays(today, -state.n);
         tabsEl.innerHTML = CATS.map(function (c) {
@@ -357,9 +364,25 @@
         });
       }
 
-      panel.querySelectorAll('.chip').forEach(function (b) {
-        b.onclick = function () { if (state.loading) return; state.n = +b.dataset.n; compute(); render(); fetchAll(false); };
+      panel.querySelectorAll('.chip[data-n]').forEach(function (b) {
+        b.onclick = function () { if (state.loading) return; state.custom = false; state.n = +b.dataset.n; compute(); render(); fetchAll(false); };
       });
+      // 달력: 고른 날짜 이후로 숙제 안 한 학생
+      var dpk = panel.querySelector('.dpk');
+      dpk.max = ymd(today);
+      panel.querySelector('.chip.cal').onclick = function () {
+        if (state.loading) return;
+        dpk.value = ymd(addDays(today, -state.n));
+        try { dpk.showPicker(); } catch (e) { dpk.classList.add('show'); dpk.focus(); }
+      };
+      dpk.onchange = function () {
+        var m = dpk.value.match(/(\d{4})-(\d{2})-(\d{2})/); if (!m || state.loading) return;
+        var picked = new Date(+m[1], +m[2] - 1, +m[3]);
+        var n = Math.round((today - picked) / 864e5); if (n < 0) n = 0;
+        dpk.classList.remove('show');
+        state.custom = [0, 1, 2, 3, 7].indexOf(n) < 0; state.n = n;
+        compute(); render(); fetchAll(false);
+      };
       onlyBtn.onclick = function () {
         state.only = !state.only;
         onlyBtn.textContent = state.only ? '전체 학생 보기' : '안 한 학생만 보기';
