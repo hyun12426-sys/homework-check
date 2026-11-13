@@ -133,6 +133,12 @@
         '#hwc-panel .empty,#hwc-panel .loading{padding:26px 18px;text-align:center;color:#7c63c9;font-weight:600}' +
         '#hwc-panel .loading small{display:block;color:#958ea8;font-weight:400;margin-top:6px}' +
         '#hwc-panel .warn{margin:0 18px 6px;font-size:12px;color:#c2477a}' +
+        '#hwc-panel .sort{margin:0 18px 6px;display:flex;justify-content:flex-end;align-items:center;gap:4px;font-size:12px;color:#958ea8}' +
+        '#hwc-panel .sort button{border:0;background:none;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:600;color:#958ea8;cursor:pointer}' +
+        '#hwc-panel .sort button:hover{color:#7c63c9}' +
+        '#hwc-panel .sort button.on{background:#efebfa;color:#5b47a3;font-weight:800}' +
+        '#hwc-panel .low{display:inline-block;margin-top:2px;padding:1px 8px;border-radius:999px;background:#d92d20;color:#fff;font-size:12px;font-weight:800;font-style:normal}' +
+        '#hwc-panel .bdg span.lowb{background:#d92d20;color:#fff}' +
         'tr.hwc-miss td{background:#fff3b0 !important}' +
         'tr.hwc-hide{display:none !important}';
 
@@ -145,7 +151,7 @@
         '<div class="hd"><b>숙제 안 한 학생</b><span class="acts"><button class="fold" title="오른쪽으로 접기">»</button><button class="x" title="닫기">×</button></span></div>' +
         '<div class="ctl">기준 <button class="chip" data-n="1">어제</button><button class="chip" data-n="2">2일</button><button class="chip" data-n="3">3일</button><button class="chip" data-n="7">7일</button></div>' +
         '<div class="tabs"></div>' +
-        '<div class="sum"></div><div class="warn" hidden></div><ul></ul>' +
+        '<div class="sum"></div><div class="warn" hidden></div><div class="sort"></div><ul></ul>' +
         '<div class="ft"><button class="btn copy">명단 복사</button><button class="btn sub only">안 한 학생만 보기</button></div>' +
         '</div>';
       document.body.appendChild(panel);
@@ -154,7 +160,16 @@
       var onlyBtn = panel.querySelector('.only'), tabArw = panel.querySelector('.tab .arw');
       // 지금 열어 둔 화면에 맞는 탭부터 보여 주기
       var startCat = /lingofit/i.test(location.pathname) ? 'lingo' : /vocafit/i.test(location.pathname) ? 'voca' : /MemberLMS\.asp/i.test(location.pathname) ? 'selena' : 'all';
-      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [] };
+      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], sort: { all: 'many', el: 'old', voca: 'old', selena: 'name', lingo: 'name' } };
+      var LOW = 80; // 보카핏 점수가 이보다 낮으면 경고
+      var SORTS = {
+        all: [['many', '많이 안 한 순'], ['name', '이름순']],
+        selena: [['name', '이름순']],
+        lingo: [['name', '이름순']],
+        el: [['old', '오래된 순'], ['new', '최근 순'], ['name', '이름순']],
+        voca: [['old', '오래된 순'], ['new', '최근 순'], ['score', '점수 낮은 순'], ['name', '이름순']]
+      };
+      var sortEl = panel.querySelector('.sort');
       var today = new Date(); today.setHours(0, 0, 0, 0);
 
       function setFolded(f) { panel.classList.toggle('folded', f); tabArw.textContent = f ? '◀' : '▶'; }
@@ -263,7 +278,8 @@
         Object.keys(lingo).forEach(function (nm) { var s = get(nm); s.miss.lingo = true; s.info.lingo = lingo[nm]; });
         Object.keys(voca).forEach(function (nm) {
           var v = voca[nm];
-          if (!v.date || v.date < base) { var s = get(nm); s.miss.voca = true; s.info.voca = (v.dateText ? '마지막 ' + v.dateText.slice(2) : '기록 없음') + (v.score ? ' · ' + v.score + '점' : ''); s.sortVoca = v.date ? v.date.getTime() : 0; }
+          if (!v.date || v.date < base) { var s = get(nm); s.miss.voca = true; s.info.voca = (v.dateText ? '마지막 ' + v.dateText.slice(2) : '기록 없음') + (v.score ? ' · ' + v.score + '점' : ''); s.sortVoca = v.date ? v.date.getTime() : 0;
+            var sc = parseInt(v.score, 10); s.score = isNaN(sc) ? null : sc; }
         });
         state.students = Object.keys(byName).map(function (k) { return byName[k]; });
       }
@@ -286,12 +302,19 @@
 
         var list = listFor(state.cat);
         var cat = state.cat;
+        var how = state.sort[cat];
+        var byName = function (a, b) { return a.name.localeCompare(b.name, 'ko'); };
         list.sort(function (a, b) {
-          if (cat === 'el') return (a.sortEl || 0) - (b.sortEl || 0);
-          if (cat === 'voca') return (a.sortVoca || 0) - (b.sortVoca || 0);
-          var ca = Object.keys(a.miss).length, cb = Object.keys(b.miss).length;
-          return cb - ca || a.name.localeCompare(b.name, 'ko');
+          if (how === 'name') return byName(a, b);
+          if (how === 'many') return Object.keys(b.miss).length - Object.keys(a.miss).length || byName(a, b);
+          if (how === 'score') { var sa = a.score == null ? 999 : a.score, sb = b.score == null ? 999 : b.score; return sa - sb || byName(a, b); }
+          var ta = cat === 'el' ? (a.sortEl || 0) : (a.sortVoca || 0), tb = cat === 'el' ? (b.sortEl || 0) : (b.sortVoca || 0);
+          return (how === 'new' ? tb - ta : ta - tb) || byName(a, b);
         });
+        var opts = SORTS[cat];
+        sortEl.hidden = opts.length < 2;
+        sortEl.innerHTML = '정렬 ' + opts.map(function (o) { return '<button data-s="' + o[0] + '" class="' + (o[0] === how ? 'on' : '') + '">' + o[1] + '</button>'; }).join('');
+        sortEl.querySelectorAll('button').forEach(function (b) { b.onclick = function () { state.sort[cat] = b.dataset.s; render(); }; });
         panel.querySelector('.tab .cnt').textContent = listFor('all').length;
         var label = { all: '숙제를 하나라도 안 한 학생', selena: '셀레나 미학습', lingo: '링고핏 미학습', voca: '보카핏 미완료', el: '이러닝(셀레나·헤이즐·단어장) 학습 기록 없음' }[cat];
         sum.innerHTML = '<strong>' + list.length + '명</strong> · ' + md(base) + ' 이후 ' + label;
@@ -308,14 +331,22 @@
           var dt = li.querySelector('.dt');
           if (cat === 'all') {
             var b = document.createElement('div'); b.className = 'bdg';
-            ['selena', 'lingo', 'voca', 'el'].forEach(function (k) { if (s.miss[k]) { var sp = document.createElement('span'); sp.textContent = SHORT[k]; b.appendChild(sp); } });
+            ['selena', 'lingo', 'voca', 'el'].forEach(function (k) {
+              if (!s.miss[k]) return;
+              var sp = document.createElement('span'); sp.textContent = SHORT[k];
+              if (k === 'voca' && s.score != null && s.score < LOW) { sp.className = 'lowb'; sp.textContent = SHORT[k] + ' ' + s.score + '점'; }
+              b.appendChild(sp);
+            });
             dt.appendChild(b);
             li.querySelector('.meta').textContent = [s.grade, s.book].filter(Boolean).join(' · ');
           } else {
             var bb = document.createElement('b');
             bb.textContent = cat === 'selena' || cat === 'lingo' ? '미학습' : s.info[cat].split(' · ')[0];
             dt.appendChild(bb);
-            if (cat === 'voca' && s.info.voca.indexOf('점') > 0) dt.appendChild(document.createTextNode(s.info.voca.split(' · ')[1]));
+            if (cat === 'voca' && s.score != null) {
+              if (s.score < LOW) { var em = document.createElement('em'); em.className = 'low'; em.textContent = '⚠ ' + s.score + '점'; dt.appendChild(em); }
+              else dt.appendChild(document.createTextNode(s.score + '점'));
+            }
             li.querySelector('.meta').textContent = [s.grade, (cat === 'selena' || cat === 'lingo') ? s.info[cat] : (cat === 'voca' ? (voca[s.name] || {}).book : s.book)].filter(Boolean).join(' · ');
           }
           li.onclick = function () {
