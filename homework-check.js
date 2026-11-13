@@ -6,6 +6,8 @@
   var MAIN = function () {
     (async function () {
       var PANEL_ID = 'hwc-panel';
+      var VERSION = '7'; // 고칠 때마다 1씩 올리기 (안내 페이지 버튼에도 자동으로 표시됨)
+      var UPDATED = '11.13'; // 고친 날짜 (월.일)
       var old = document.getElementById(PANEL_ID);
       if (old) { if (old._cleanup) old._cleanup(); old.remove(); }
 
@@ -104,6 +106,7 @@
         '#hwc-panel .hd{background:linear-gradient(135deg,#9a85e0,#7c63c9);color:#fff;padding:16px 18px 14px;display:flex;align-items:center;justify-content:space-between}' +
         '#hwc-panel .hd b{font-size:17px;font-weight:800;letter-spacing:-0.02em}' +
         '#hwc-panel .hd .acts{display:flex;gap:4px}' +
+        '#hwc-panel .hd .ver{margin-left:8px;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.22);font-size:11px;font-weight:700;vertical-align:middle}' +
         '#hwc-panel .x,#hwc-panel .fold{background:rgba(255,255,255,.16);border:0;color:#fff;font-size:16px;cursor:pointer;line-height:1;width:28px;height:28px;border-radius:9px}' +
         '#hwc-panel .x:hover,#hwc-panel .fold:hover{background:rgba(255,255,255,.28)}' +
         '#hwc-panel .ctl{padding:12px 14px 8px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;color:#7d7591;font-size:13px}' +
@@ -162,7 +165,7 @@
         '<style>' + css + '</style>' +
         '<button class="tab" title="접기 / 펼치기"><span class="arw">▶</span><span class="v">숙제체크</span><span class="cnt">…</span></button>' +
         '<div class="box">' +
-        '<div class="hd"><b>숙제 안 한 학생</b><span class="acts"><button class="fold" title="오른쪽으로 접기">»</button><button class="x" title="닫기">×</button></span></div>' +
+        '<div class="hd"><b>숙제 안 한 학생<span class="ver">v' + VERSION + ' · ' + UPDATED + '</span></b><span class="acts"><button class="fold" title="오른쪽으로 접기">»</button><button class="x" title="닫기">×</button></span></div>' +
         '<div class="ctl">기준 <button class="chip" data-n="0">오늘</button><button class="chip" data-n="1">어제</button><button class="chip cal" title="달력에서 날짜 고르기">📅 날짜</button><input type="date" class="dpk" tabindex="-1"></div>' +
         '<div class="tabs"></div>' +
         '<div class="sum"></div><div class="warn" hidden></div><div class="sort"></div><ul></ul>' +
