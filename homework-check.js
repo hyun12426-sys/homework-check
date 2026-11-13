@@ -117,7 +117,8 @@
         '#hwc-panel .tb.on i{background:#7c63c9;color:#fff}' +
         '#hwc-panel .sum{margin:10px 18px 6px;padding:9px 14px;background:#f4f1fb;border-radius:12px;font-size:13px;color:#7d7591}' +
         '#hwc-panel .sum strong{color:#7c63c9;font-size:17px;font-weight:800}' +
-        '#hwc-panel ul{list-style:none;margin:0;padding:0 8px;overflow:auto;flex:1;min-height:80px}' +
+        '#hwc-panel .box>*{flex:none}' +
+        '#hwc-panel .box>ul{list-style:none;margin:0;padding:0 8px;overflow:auto;flex:1 1 auto;min-height:80px}' +
         '#hwc-panel li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:9px 10px;border-bottom:1px solid #f0edf7;cursor:pointer;border-radius:10px}' +
         '#hwc-panel li:hover{background:#f7f4fd}' +
         '#hwc-panel .nm{font-weight:700;color:#2d2640}' +
@@ -151,7 +152,9 @@
 
       var ul = panel.querySelector('ul'), sum = panel.querySelector('.sum'), tabsEl = panel.querySelector('.tabs'), warnEl = panel.querySelector('.warn');
       var onlyBtn = panel.querySelector('.only'), tabArw = panel.querySelector('.tab .arw');
-      var state = { n: 1, cat: 'all', only: false, loading: true, students: [], miss: {}, failed: [] };
+      // 지금 열어 둔 화면에 맞는 탭부터 보여 주기
+      var startCat = /lingofit/i.test(location.pathname) ? 'lingo' : /vocafit/i.test(location.pathname) ? 'voca' : /MemberLMS\.asp/i.test(location.pathname) ? 'selena' : 'all';
+      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [] };
       var today = new Date(); today.setHours(0, 0, 0, 0);
 
       function setFolded(f) { panel.classList.toggle('folded', f); tabArw.textContent = f ? '◀' : '▶'; }
