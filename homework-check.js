@@ -6,7 +6,7 @@
   var MAIN = function () {
     (async function () {
       var PANEL_ID = 'hwc-panel';
-      var VERSION = '7'; // 고칠 때마다 1씩 올리기 (안내 페이지 버튼에도 자동으로 표시됨)
+      var VERSION = '8'; // 고칠 때마다 1씩 올리기 (안내 페이지 버튼에도 자동으로 표시됨)
       var UPDATED = '26.11.13'; // 고친 날짜 (연.월.일) — 안내 페이지 버튼에 '26년 11월 13일'로 표시
       var old = document.getElementById(PANEL_ID);
       if (old) { if (old._cleanup) old._cleanup(); old.remove(); }
@@ -33,6 +33,7 @@
       function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
       function ymd(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
       function wd(d) { return d ? '(' + '일월화수목금토'.charAt(d.getDay()) + ')' : ''; }
+      function hm(d) { var h = d.getHours(); return (h < 12 ? '오전 ' : '오후 ') + ((h % 12) || 12) + ':' + ('0' + d.getMinutes()).slice(-2); }
       function md(d) { return (d.getMonth() + 1) + '/' + d.getDate() + wd(d); }
       function dot(d) { return String(d.getFullYear()).slice(2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + ('0' + d.getDate()).slice(-2); }
       function dataRows(doc) {
@@ -114,6 +115,10 @@
         '#hwc-panel .chip:hover{border-color:#7c63c9;color:#7c63c9}' +
         '#hwc-panel .chip.on{background:#7c63c9;border-color:#7c63c9;color:#fff}' +
         '#hwc-panel .ctl{position:relative}' +
+        '#hwc-panel .rf{margin-left:auto;display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid #7c63c9;border-radius:999px;background:#fff;color:#5b47a3;font-size:12px;font-weight:700;cursor:pointer}' +
+        '#hwc-panel .rf:hover{background:#7c63c9;color:#fff}' +
+        '#hwc-panel .rf:disabled{opacity:.5;cursor:wait}' +
+        '#hwc-panel .sum .at{display:block;margin-top:2px;font-size:11px;font-weight:500;color:#958ea8}' +
         '#hwc-panel .dpk{position:absolute;right:18px;bottom:0;width:1px;height:1px;opacity:0;border:0;padding:0;pointer-events:none}' +
         '#hwc-panel .dpk.show{position:static;width:auto;height:auto;opacity:1;pointer-events:auto;border:1px solid #ddd5f2;border-radius:8px;padding:3px 6px;font-size:12px}' +
         '#hwc-panel .tabs{display:flex;gap:0;padding:0 10px;border-bottom:1px solid #f0edf7}' +
@@ -166,7 +171,7 @@
         '<button class="tab" title="접기 / 펼치기"><span class="arw">▶</span><span class="v">숙제체크</span><span class="cnt">…</span></button>' +
         '<div class="box">' +
         '<div class="hd"><b>숙제 안 한 학생<span class="ver">V' + VERSION + '</span></b><span class="acts"><button class="fold" title="오른쪽으로 접기">»</button><button class="x" title="닫기">×</button></span></div>' +
-        '<div class="ctl">기준 <button class="chip" data-n="0">오늘</button><button class="chip" data-n="1">어제</button><button class="chip cal" title="달력에서 날짜 고르기">📅 날짜</button><input type="date" class="dpk" tabindex="-1"></div>' +
+        '<div class="ctl">기준 <button class="chip" data-n="0">오늘</button><button class="chip" data-n="1">어제</button><button class="chip cal" title="달력에서 날짜 고르기">📅 날짜</button><input type="date" class="dpk" tabindex="-1"><button class="rf" title="지금 기록을 다시 읽어 와요">🔄 새로고침</button></div>' +
         '<div class="tabs"></div>' +
         '<div class="sum"></div><div class="warn" hidden></div><div class="sort"></div><ul></ul>' +
         '<div class="ft"><button class="btn copy">명단 복사</button><button class="btn sub only">안 한 학생만 보기</button></div>' +
@@ -219,7 +224,8 @@
       // ---------- 데이터 읽기 ----------
       var F = {};
       async function loadMembers() {
-        var f = await openPage(PAGES.members, 'MemberList');
+        if (F.members) { F.members.remove(); frames.splice(frames.indexOf(F.members), 1); }
+        var f = F.members = await openPage(PAGES.members, 'MemberList');
         var w = f.contentWindow, d = f.contentDocument, rowsInput = d.getElementById('ROWS');
         var original = rowsInput ? rowsInput.value : '10';
         if (rowsInput) {
@@ -256,6 +262,7 @@
       }
       async function loadVoca() {
         if (!F.voca) F.voca = await openPage(PAGES.voca, 'VocafitStudyList');
+        else { var bv = F.voca.contentDocument.querySelectorAll('#M_Result tr').length; F.voca.contentWindow.VocafitStudyList(1); await waitStable(F.voca.contentDocument, bv, 1500); }
         var d = F.voca.contentDocument, col = headerIndex(d, /완료일/);
         var cN = col('회원명', 1), cB = col('학습단어장', 2), cD = col('완료일', 4), cS = col('점수', 5);
         if (!dataRows(d).length) throw new Error('empty');
@@ -290,7 +297,7 @@
         results.forEach(function (r, i) {
           if (r.status === 'rejected') state.failed.push(first ? ['학생 관리', '보카핏', '셀레나', '링고핏'][i] : ['셀레나', '링고핏'][i]);
         });
-        state.loading = false;
+        state.loading = false; state.checkedAt = new Date();
         compute(); render();
       }
 
@@ -351,7 +358,7 @@
         panel.querySelector('.tab .cnt').textContent = listFor('all').length;
         var label = { all: '숙제를 하나라도 안 한 학생', selena: '셀레나 미학습', lingo: '링고핏 미학습', voca: '보카핏 미완료', el: '이러닝(셀레나·헤이즐·단어장) 학습 기록 없음' }[cat];
         sum.className = 'sum c-' + cat;
-        sum.innerHTML = '<strong>' + list.length + '명</strong> · ' + md(base) + ' 이후 ' + label;
+        sum.innerHTML = '<strong>' + list.length + '명</strong> · ' + md(base) + ' 이후 ' + label + (state.checkedAt ? '<span class="at">' + hm(state.checkedAt) + '에 확인한 결과예요</span>' : '');
         warnEl.hidden = !state.failed.length;
         warnEl.textContent = state.failed.length ? state.failed.join(', ') + ' 화면을 읽지 못했어요. 어드민 로그인이 풀렸을 수 있어요. 새로 고침(F5)이나 다시 로그인한 뒤 눌러 주세요.' : '';
         if (state.failed.indexOf('학생 관리') >= 0) {
@@ -415,6 +422,15 @@
       // 달력: 고른 날짜 이후로 숙제 안 한 학생
       var dpk = panel.querySelector('.dpk');
       dpk.max = ymd(today);
+      // 새로고침: 지금 시각 기준으로 네 화면을 다시 읽기 (패널을 켜 둔 채 시간이 지났을 때)
+      var rfBtn = panel.querySelector('.rf');
+      rfBtn.onclick = async function () {
+        if (state.loading) return;
+        rfBtn.disabled = true;
+        var now = new Date(); now.setHours(0, 0, 0, 0);
+        if (now.getTime() !== today.getTime()) { today = now; dpk.max = ymd(today); }
+        try { await fetchAll(true); } finally { rfBtn.disabled = false; }
+      };
       panel.querySelector('.chip.cal').onclick = function () {
         if (state.loading) return;
         dpk.value = ymd(addDays(today, -state.n));
