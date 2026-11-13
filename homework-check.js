@@ -377,7 +377,6 @@
             ['selena', 'lingo', 'voca', 'el'].forEach(function (k) {
               if (!s.miss[k]) return;
               var sp = document.createElement('span'); sp.textContent = SHORT[k];
-              if (k === 'voca' && s.score != null && s.score < LOW) { sp.className = 'lowb'; sp.textContent = SHORT[k] + ' ' + s.score + '점'; }
               b.appendChild(sp);
             });
             dt.appendChild(b);
