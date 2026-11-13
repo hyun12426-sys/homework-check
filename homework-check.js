@@ -153,7 +153,7 @@
         '<button class="tab" title="접기 / 펼치기"><span class="arw">▶</span><span class="v">숙제체크</span><span class="cnt">…</span></button>' +
         '<div class="box">' +
         '<div class="hd"><b>숙제 안 한 학생</b><span class="acts"><button class="fold" title="오른쪽으로 접기">»</button><button class="x" title="닫기">×</button></span></div>' +
-        '<div class="ctl">기준 <button class="chip" data-n="0">오늘</button><button class="chip" data-n="1">어제</button><button class="chip" data-n="2">2일</button><button class="chip" data-n="3">3일</button><button class="chip" data-n="7">7일</button><button class="chip cal" title="달력에서 날짜 고르기">📅 날짜</button><input type="date" class="dpk" tabindex="-1"></div>' +
+        '<div class="ctl">기준 <button class="chip" data-n="0">오늘</button><button class="chip" data-n="1">어제</button><button class="chip cal" title="달력에서 날짜 고르기">📅 날짜</button><input type="date" class="dpk" tabindex="-1"></div>' +
         '<div class="tabs"></div>' +
         '<div class="sum"></div><div class="warn" hidden></div><div class="sort"></div><ul></ul>' +
         '<div class="ft"><button class="btn copy">명단 복사</button><button class="btn sub only">안 한 학생만 보기</button></div>' +
@@ -164,12 +164,12 @@
       var onlyBtn = panel.querySelector('.only'), tabArw = panel.querySelector('.tab .arw');
       // 지금 열어 둔 화면에 맞는 탭부터 보여 주기
       var startCat = /lingofit/i.test(location.pathname) ? 'lingo' : /vocafit/i.test(location.pathname) ? 'voca' : /MemberLMS\.asp/i.test(location.pathname) ? 'selena' : 'all';
-      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], sort: { all: 'many', el: 'old', voca: 'old', selena: 'name', lingo: 'name' } };
+      var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], sort: { all: 'many', el: 'old', voca: 'old', selena: 'grade', lingo: 'grade' } };
       var LOW = 80; // 보카핏 점수가 이보다 낮으면 경고
       var SORTS = {
         all: [['many', '많이 안 한 순'], ['name', '이름순']],
-        selena: [['name', '이름순']],
-        lingo: [['name', '이름순']],
+        selena: [['grade', '학년순'], ['book', '교재순'], ['tier', '티어순'], ['name', '이름순']],
+        lingo: [['grade', '학년순'], ['book', '교재순'], ['tier', '단계순'], ['name', '이름순']],
         el: [['old', '오래된 순'], ['new', '최근 순'], ['name', '이름순']],
         voca: [['old', '오래된 순'], ['new', '최근 순'], ['score', '점수 낮은 순'], ['name', '이름순']]
       };
@@ -216,6 +216,8 @@
         }
         var col = headerIndex(d, /이러닝/);
         var cN = col('회원명', 1), cG = col('학년', 2), cB = col('학습교재', 6), cE = col('이러닝', 8);
+        // 학생이 한 명도 안 읽히면 로그인이 풀린 것일 수 있어요: "모두 했어요"로 보이지 않게 실패로 처리
+        if (!dataRows(d).length) throw new Error('empty');
         return dataRows(d).map(function (r) {
           var c = r.cells, el = clean(c[cE] ? c[cE].textContent : '');
           return { name: clean(c[cN].textContent), grade: clean(c[cG].textContent), book: clean(c[cB] ? c[cB].textContent : ''),
@@ -228,12 +230,14 @@
         setRange(d, from, today);
         var before = d.querySelectorAll('#M_Result tr').length;
         w[fn](1); await waitStable(d, before, 1500);
-        var cN = headerIndex(d)('회원명', 1), cB = headerIndex(d)('학습교재', 3);
+        var hi = headerIndex(d), cN = hi('회원명', 1), cB = hi('학습교재', 3), cT = hi(key === 'lingo' ? '단계' : '티어', 2);
+        TIER[key] = {};
         var out = {};
         dataRows(d).forEach(function (r) {
           var nm = clean(r.cells[cN].textContent); if (!nm) return;
           var bk = clean(r.cells[cB] ? r.cells[cB].textContent : '');
           out[nm] = out[nm] ? out[nm] + ', ' + bk : bk;
+          if (!TIER[key][nm]) TIER[key][nm] = clean(r.cells[cT] ? r.cells[cT].textContent : '');
         });
         return out;
       }
@@ -241,6 +245,7 @@
         if (!F.voca) F.voca = await openPage(PAGES.voca, 'VocafitStudyList');
         var d = F.voca.contentDocument, col = headerIndex(d, /완료일/);
         var cN = col('회원명', 1), cB = col('학습단어장', 2), cD = col('완료일', 4), cS = col('점수', 5);
+        if (!dataRows(d).length) throw new Error('empty');
         var out = {};
         dataRows(d).forEach(function (r) {
           var nm = clean(r.cells[cN].textContent); if (!nm) return;
@@ -250,7 +255,13 @@
         return out;
       }
 
-      var members = [], voca = {}, selena = {}, lingo = {};
+      var members = [], voca = {}, selena = {}, lingo = {}, TIER = { selena: {}, lingo: {} };
+      // 학년 순서: 유치 → 초등 → 중 → 고, 그 안에서 숫자
+      function gradeKey(g) {
+        g = String(g || ''); var n = parseInt((g.match(/\d+/) || ['0'])[0], 10);
+        var lv = /유|7세|6세|5세/.test(g) ? 0 : /초/.test(g) ? 1 : /중/.test(g) ? 2 : /고/.test(g) ? 3 : 4;
+        return lv * 100 + n;
+      }
       async function fetchAll(first) {
         state.loading = true; state.failed = [];
         loading(first ? '전체 학생을 불러오는 중이에요' : '기준을 바꿔서 다시 확인하는 중이에요');
@@ -313,6 +324,9 @@
         var byName = function (a, b) { return a.name.localeCompare(b.name, 'ko'); };
         list.sort(function (a, b) {
           if (how === 'name') return byName(a, b);
+          if (how === 'grade') return gradeKey(a.grade) - gradeKey(b.grade) || byName(a, b);
+          if (how === 'book') return String(a.info[cat] || a.book || '').localeCompare(String(b.info[cat] || b.book || ''), 'ko', { numeric: true }) || byName(a, b);
+          if (how === 'tier') return String((TIER[cat] || {})[a.name] || '').localeCompare(String((TIER[cat] || {})[b.name] || ''), 'ko', { numeric: true }) || byName(a, b);
           if (how === 'many') return Object.keys(b.miss).length - Object.keys(a.miss).length || byName(a, b);
           if (how === 'score') { var sa = a.score == null ? 999 : a.score, sb = b.score == null ? 999 : b.score; return sa - sb || byName(a, b); }
           var ta = cat === 'el' ? (a.sortEl || 0) : (a.sortVoca || 0), tb = cat === 'el' ? (b.sortEl || 0) : (b.sortVoca || 0);
@@ -326,7 +340,14 @@
         var label = { all: '숙제를 하나라도 안 한 학생', selena: '셀레나 미학습', lingo: '링고핏 미학습', voca: '보카핏 미완료', el: '이러닝(셀레나·헤이즐·단어장) 학습 기록 없음' }[cat];
         sum.innerHTML = '<strong>' + list.length + '명</strong> · ' + md(base) + ' 이후 ' + label;
         warnEl.hidden = !state.failed.length;
-        warnEl.textContent = state.failed.length ? state.failed.join(', ') + ' 화면을 읽지 못했어요. 패널을 닫고 다시 눌러 주세요.' : '';
+        warnEl.textContent = state.failed.length ? state.failed.join(', ') + ' 화면을 읽지 못했어요. 어드민 로그인이 풀렸을 수 있어요. 새로 고침(F5)이나 다시 로그인한 뒤 눌러 주세요.' : '';
+        if (state.failed.indexOf('학생 관리') >= 0) {
+          ul.innerHTML = '<div class="empty">학생 명단을 읽지 못했어요<small style="display:block;color:#958ea8;font-weight:400;margin-top:6px">어드민 로그인이 풀렸을 수 있어요.<br>새로 고침(F5)하거나 다시 로그인한 뒤 눌러 주세요.</small></div>';
+          sum.textContent = '확인하지 못했어요';
+          tabsEl.querySelectorAll('.tb i').forEach(function (i) { i.textContent = '-'; });
+          panel.querySelector('.tab .cnt').textContent = '!';
+          return;
+        }
 
         paintHere(new Set(list.map(function (s) { return s.name; })));
         if (!list.length) { ul.innerHTML = '<div class="empty">모두 숙제를 했어요 🎉</div>'; return; }
@@ -354,7 +375,7 @@
               if (s.score < LOW) { var em = document.createElement('em'); em.className = 'low'; em.textContent = '⚠ ' + s.score + '점'; dt.appendChild(em); }
               else dt.appendChild(document.createTextNode(s.score + '점'));
             }
-            li.querySelector('.meta').textContent = [s.grade, (cat === 'selena' || cat === 'lingo') ? s.info[cat] : (cat === 'voca' ? (voca[s.name] || {}).book : s.book)].filter(Boolean).join(' · ');
+            li.querySelector('.meta').textContent = [s.grade, (cat === 'selena' || cat === 'lingo') ? (TIER[cat][s.name] || '') : '', (cat === 'selena' || cat === 'lingo') ? s.info[cat] : (cat === 'voca' ? (voca[s.name] || {}).book : s.book)].filter(Boolean).join(' · ');
           }
           li.onclick = function () {
             var r = hereRows.find(function (x) { return clean(x.cells[hereName] ? x.cells[hereName].textContent : '') === s.name; });
@@ -380,7 +401,7 @@
         var picked = new Date(+m[1], +m[2] - 1, +m[3]);
         var n = Math.round((today - picked) / 864e5); if (n < 0) n = 0;
         dpk.classList.remove('show');
-        state.custom = [0, 1, 2, 3, 7].indexOf(n) < 0; state.n = n;
+        state.custom = [0, 1].indexOf(n) < 0; state.n = n;
         compute(); render(); fetchAll(false);
       };
       onlyBtn.onclick = function () {
