@@ -6,7 +6,7 @@
   var MAIN = function () {
     (async function () {
       var PANEL_ID = 'hwc-panel';
-      var VERSION = '9'; // 고칠 때마다 1씩 올리기 (안내 페이지 버튼에도 자동으로 표시됨)
+      var VERSION = '10'; // 고칠 때마다 1씩 올리기 (안내 페이지 버튼에도 자동으로 표시됨)
       var UPDATED = '26.11.13'; // 고친 날짜 (연.월.일) — 안내 페이지 버튼에 '26년 11월 13일'로 표시
       var old = document.getElementById(PANEL_ID);
       if (old) { if (old._cleanup) old._cleanup(); old.remove(); }
@@ -185,11 +185,11 @@
       var state = { n: 1, cat: startCat, only: false, loading: true, students: [], miss: {}, failed: [], sort: { all: 'many', el: 'old', voca: 'new', selena: 'new', lingo: 'new' } };
       var LOW = 80; // 보카핏 점수가 이보다 낮으면 경고
       var SORTS = {
-        all: [['many', '많이 안 한 순'], ['name', '이름순']],
+        all: [['many', '많이 안 한 순'], ['name', '이름순'], ['grade', '학년순']],
         selena: [['name', '이름순'], ['grade', '학년순'], ['new', '최근 순'], ['old', '오래된 순']],
         lingo: [['name', '이름순'], ['grade', '학년순'], ['new', '최근 순'], ['old', '오래된 순']],
         el: [['old', '오래된 순'], ['new', '최근 순'], ['name', '이름순']],
-        voca: [['name', '이름순'], ['new', '최근 순'], ['old', '오래된 순']]
+        voca: [['name', '이름순'], ['grade', '학년순'], ['new', '최근 순'], ['old', '오래된 순']]
       };
       var sortEl = panel.querySelector('.sort');
       var today = new Date(); today.setHours(0, 0, 0, 0);
@@ -394,15 +394,16 @@
         if (!list.length) { ul.innerHTML = '<div class="empty">모두 숙제를 했어요 🎉</div>'; return; }
         ul.innerHTML = '';
         // 오래된 순 · 최근 순일 때는 날짜마다 묶어서 보여 주기
-        var grouped = cat !== 'all' && (how === 'old' || how === 'new');
-        var dayOf = function (s) { var t = lastT(s, cat); if (!t) return (cat === 'selena' || cat === 'lingo') ? '한 달 넘게 기록 없음' : '기록 없음'; var d = new Date(t); return (d.getFullYear() !== today.getFullYear() ? (d.getFullYear() % 100) + '년 ' : '') + md(d); };
+        var byGrade = how === 'grade';
+        var grouped = byGrade || (cat !== 'all' && (how === 'old' || how === 'new'));
+        var dayOf = function (s) { if (byGrade) return s.grade || '학년 정보 없음'; var t = lastT(s, cat); if (!t) return (cat === 'selena' || cat === 'lingo') ? '한 달 넘게 기록 없음' : '기록 없음'; var d = new Date(t); return (d.getFullYear() !== today.getFullYear() ? (d.getFullYear() % 100) + '년 ' : '') + md(d); };
         var counts = {}; if (grouped) list.forEach(function (s) { var k = dayOf(s); counts[k] = (counts[k] || 0) + 1; });
         var lastDay = null;
         list.forEach(function (s) {
           if (grouped && dayOf(s) !== lastDay) {
             lastDay = dayOf(s);
             var g = document.createElement('li'); g.className = 'grp';
-            var gb = document.createElement('b'); gb.textContent = /없음$/.test(lastDay) ? lastDay : '마지막 ' + lastDay;
+            var gb = document.createElement('b'); gb.textContent = (byGrade || /없음$/.test(lastDay)) ? lastDay : '마지막 ' + lastDay;
             var gs = document.createElement('span'); gs.textContent = counts[lastDay] + '명';
             g.appendChild(gb); g.appendChild(gs); ul.appendChild(g);
           }
