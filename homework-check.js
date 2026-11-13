@@ -120,11 +120,17 @@
         '#hwc-panel .tb.on i{background:#7c63c9;color:#fff}' +
         '#hwc-panel .sum{margin:10px 18px 6px;padding:9px 14px;background:#f4f1fb;border-radius:12px;font-size:13px;color:#7d7591}' +
         '#hwc-panel .sum strong{color:#7c63c9;font-size:17px;font-weight:800}' +
+        '#hwc-panel .sum{border-left:5px solid #7c63c9;color:#4a4060;font-weight:600}' +
+        '#hwc-panel .sum strong{font-size:20px;margin-right:2px}' +
+        '#hwc-panel .sum.c-selena{background:#fdecf3;border-left-color:#d6457f}#hwc-panel .sum.c-selena strong{color:#c2306b}' +
+        '#hwc-panel .sum.c-lingo{background:#e3f5ee;border-left-color:#1f9a72}#hwc-panel .sum.c-lingo strong{color:#16805e}' +
+        '#hwc-panel .sum.c-voca{background:#fff1dc;border-left-color:#e08a00}#hwc-panel .sum.c-voca strong{color:#b86e00}' +
+        '#hwc-panel .bdg span.b-selena{background:#fdecf3;color:#c2306b}#hwc-panel .bdg span.b-lingo{background:#e3f5ee;color:#16805e}#hwc-panel .bdg span.b-voca{background:#fff1dc;color:#b86e00}' +
         '#hwc-panel .box>*{flex:none}' +
         '#hwc-panel .box>ul{list-style:none;margin:0;padding:0 8px;overflow:auto;flex:1 1 auto;min-height:80px}' +
         '#hwc-panel li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:9px 10px;border-bottom:1px solid #f0edf7;cursor:pointer;border-radius:10px}' +
         '#hwc-panel li:hover{background:#f7f4fd}' +
-        '#hwc-panel li.grp{display:flex;justify-content:space-between;position:sticky;top:0;z-index:1;margin-top:6px;padding:7px 10px;border:0;border-radius:10px;background:#efebfa;color:#5b47a3;font-size:13px;font-weight:800;cursor:default}' +
+        '#hwc-panel li.grp{display:flex;justify-content:space-between;margin-top:6px;padding:7px 10px;border:0;border-radius:10px;background:#efebfa;color:#5b47a3;font-size:13px;font-weight:800;cursor:default}' +
         '#hwc-panel li.grp:hover{background:#efebfa}' +
         '#hwc-panel li.grp span{font-weight:600;color:#7d7591;font-size:12px}' +
         '#hwc-panel .nm{font-weight:700;color:#2d2640}' +
@@ -175,7 +181,7 @@
         selena: [['grade', '학년순'], ['book', '교재순'], ['tier', '티어순'], ['name', '이름순']],
         lingo: [['grade', '학년순'], ['book', '교재순'], ['tier', '단계순'], ['name', '이름순']],
         el: [['old', '오래된 순'], ['new', '최근 순'], ['name', '이름순']],
-        voca: [['old', '오래된 순'], ['new', '최근 순'], ['score', '점수 낮은 순'], ['name', '이름순']]
+        voca: [['name', '이름순'], ['new', '최근 순'], ['old', '오래된 순']]
       };
       var sortEl = panel.querySelector('.sort');
       var today = new Date(); today.setHours(0, 0, 0, 0);
@@ -341,6 +347,7 @@
         sortEl.querySelectorAll('button').forEach(function (b) { b.onclick = function () { state.sort[cat] = b.dataset.s; render(); }; });
         panel.querySelector('.tab .cnt').textContent = listFor('all').length;
         var label = { all: '숙제를 하나라도 안 한 학생', selena: '셀레나 미학습', lingo: '링고핏 미학습', voca: '보카핏 미완료', el: '이러닝(셀레나·헤이즐·단어장) 학습 기록 없음' }[cat];
+        sum.className = 'sum c-' + cat;
         sum.innerHTML = '<strong>' + list.length + '명</strong> · ' + md(base) + ' 이후 ' + label;
         warnEl.hidden = !state.failed.length;
         warnEl.textContent = state.failed.length ? state.failed.join(', ') + ' 화면을 읽지 못했어요. 어드민 로그인이 풀렸을 수 있어요. 새로 고침(F5)이나 다시 로그인한 뒤 눌러 주세요.' : '';
@@ -376,7 +383,7 @@
             var b = document.createElement('div'); b.className = 'bdg';
             ['selena', 'lingo', 'voca', 'el'].forEach(function (k) {
               if (!s.miss[k]) return;
-              var sp = document.createElement('span'); sp.textContent = SHORT[k];
+              var sp = document.createElement('span'); sp.textContent = SHORT[k]; sp.className = 'b-' + k;
               b.appendChild(sp);
             });
             dt.appendChild(b);
