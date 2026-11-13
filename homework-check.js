@@ -20,7 +20,7 @@
         { key: 'selena', label: '셀레나' },
         { key: 'lingo', label: '링고핏' },
         { key: 'voca', label: '보카핏' },
-        { key: 'el', label: '최근학습일' }
+        { key: 'el', label: '이러닝' }
       ];
       var SHORT = { selena: '셀레나', lingo: '링고핏', voca: '보카핏', el: '이러닝' };
 
@@ -110,8 +110,8 @@
         '#hwc-panel .chip{padding:5px 12px;border:1px solid #ddd5f2;color:#7d7591;background:#fff;border-radius:999px;cursor:pointer;font-size:12px;font-weight:600}' +
         '#hwc-panel .chip:hover{border-color:#7c63c9;color:#7c63c9}' +
         '#hwc-panel .chip.on{background:#7c63c9;border-color:#7c63c9;color:#fff}' +
-        '#hwc-panel .tabs{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid #f0edf7;overflow-x:auto}' +
-        '#hwc-panel .tb{flex:none;border:0;background:none;padding:9px 8px;font-size:13px;font-weight:700;color:#958ea8;cursor:pointer;border-bottom:2px solid transparent}' +
+        '#hwc-panel .tabs{display:flex;gap:0;padding:0 10px;border-bottom:1px solid #f0edf7}' +
+        '#hwc-panel .tb{flex:1 1 0;min-width:0;white-space:nowrap;border:0;background:none;padding:9px 2px;font-size:13px;font-weight:700;color:#958ea8;cursor:pointer;border-bottom:2px solid transparent}' +
         '#hwc-panel .tb.on{color:#7c63c9;border-bottom-color:#7c63c9}' +
         '#hwc-panel .tb i{font-style:normal;margin-left:3px;font-size:11px;background:#f4f1fb;border-radius:999px;padding:1px 6px;color:#7c63c9}' +
         '#hwc-panel .tb.on i{background:#7c63c9;color:#fff}' +
@@ -293,7 +293,7 @@
           return cb - ca || a.name.localeCompare(b.name, 'ko');
         });
         panel.querySelector('.tab .cnt').textContent = listFor('all').length;
-        var label = { all: '숙제를 하나라도 안 한 학생', selena: '셀레나 미학습', lingo: '링고핏 미학습', voca: '보카핏 미완료', el: '이러닝 최근학습일 없음' }[cat];
+        var label = { all: '숙제를 하나라도 안 한 학생', selena: '셀레나 미학습', lingo: '링고핏 미학습', voca: '보카핏 미완료', el: '이러닝(셀레나·헤이즐·단어장) 학습 기록 없음' }[cat];
         sum.innerHTML = '<strong>' + list.length + '명</strong> · ' + md(base) + ' 이후 ' + label;
         warnEl.hidden = !state.failed.length;
         warnEl.textContent = state.failed.length ? state.failed.join(', ') + ' 화면을 읽지 못했어요. 패널을 닫고 다시 눌러 주세요.' : '';
